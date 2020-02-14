@@ -21,7 +21,7 @@ class HomePageState extends State<HomePage> {
             ),
             decoration: BoxDecoration(color: Colors.black),
             width: MediaQuery.of(c).size.width * 0.7,
-            height: MediaQuery.of(c).size.height * 0.5,
+            height: MediaQuery.of(c).size.width * 0.7,
           ),
         );
       },
