@@ -101,6 +101,8 @@ class VolunteerSignupState extends State<VolunteerSignup> {
                   child: TextFormField(
                     decoration: InputDecoration(labelText: "Name"),
                     onSaved: (input) => _name = input,
+                    validator: (input) =>
+                        input.length > 0 ? null : "Please enter name",
                   ),
                   width: MediaQuery.of(context).size.width * ratio,
                 ),
@@ -111,6 +113,8 @@ class VolunteerSignupState extends State<VolunteerSignup> {
                   child: TextFormField(
                     decoration: InputDecoration(labelText: "Address"),
                     onSaved: (input) => address = input,
+                    validator: (input) =>
+                        input.length > 0 ? null : "Please enter address",
                     keyboardType: TextInputType.multiline,
                     maxLines: null,
                   ),
@@ -135,7 +139,7 @@ class VolunteerSignupState extends State<VolunteerSignup> {
                     child: TextFormField(
                       decoration: InputDecoration(labelText: "Email-ID"),
                       validator: (input) =>
-                          !input.contains('@') ? "Not a valid email-ID" : null,
+                          !input.contains('@') ? "Invalid email-ID" : null,
                       onSaved: (input) => _email = input,
                     ),
                     width: MediaQuery.of(context).size.width * ratio),
@@ -158,6 +162,9 @@ class VolunteerSignupState extends State<VolunteerSignup> {
                   child: TextFormField(
                     decoration: InputDecoration(labelText: "Password"),
                     onSaved: (input) => _password = input,
+                    validator: (input) => input.length > 5
+                        ? null
+                        : "Password should contain more than 5 letters",
                     controller: passwordController,
                     obscureText: true,
                   ),
@@ -250,8 +257,6 @@ class VolunteerSignupState extends State<VolunteerSignup> {
         Scaffold.of(context).showSnackBar(SnackBar(
           content: Text("A verification email has been sent to your Email-ID"),
         ));
-
-        
       }).catchError((e) {
         setState(() {
           isProcessing = false;

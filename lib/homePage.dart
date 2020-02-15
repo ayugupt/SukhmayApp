@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'authentication.dart';
@@ -11,13 +13,15 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  Geolocator geolocator;
+  static Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
   GeolocationStatus permissionStatus = GeolocationStatus.granted;
+  static var locationOptions =
+      LocationOptions(accuracy: LocationAccuracy.best, distanceFilter: 5);
 
   Auth auth = new Auth();
 
   Future<void> locationPermission() async {
-    geolocator = Geolocator()..forceAndroidLocationManager;
+    //geolocator = Geolocator()..forceAndroidLocationManager;
     GeolocationStatus stat =
         await Geolocator().checkGeolocationPermissionStatus();
     if (stat != GeolocationStatus.granted) {
@@ -52,7 +56,22 @@ class HomePageState extends State<HomePage> {
                 "images/sos.png",
                 fit: BoxFit.fill,
               ),
-              onTap: () {},
+              onTap: () {
+                StreamSubscription<Position> positionStream = geolocator
+                    .getPositionStream(locationOptions)
+                    .listen((Position position) {
+                  print(position == null
+                      ? 'Unknown'
+                      : position.latitude.toString() +
+                          ', ' +
+                          position.longitude.toString());
+                          //position.latitude and position.longitude is to be sent to database
+                  /*Scaffold.of(c).showSnackBar(SnackBar(
+                    content: Text(
+                        "Lat: ${position.latitude} Long: ${position.longitude}"),
+                  ));*/
+                });
+              },
             ),
             decoration: BoxDecoration(color: Colors.black),
             width: MediaQuery.of(c).size.width * 0.7,
@@ -96,7 +115,8 @@ class HomePageState extends State<HomePage> {
                     MaterialPageRoute(builder: (BuildContext c) {
                   return UserChoice();
                 }), (Route<dynamic> route) => false);
-              },backgroundColor: Colors.grey,
+              },
+              backgroundColor: Colors.grey,
             ),
           )
         : Scaffold(
