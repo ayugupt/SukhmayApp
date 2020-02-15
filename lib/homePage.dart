@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'authentication.dart';
+import 'main.dart';
+import 'userChoice.dart';
 
 class HomePage extends StatefulWidget {
   HomePageState createState() => HomePageState();
@@ -6,6 +10,37 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+
+  Geolocator geolocator;
+  GeolocationStatus permissionStatus = GeolocationStatus.granted;
+
+  Auth auth = new Auth();
+
+  Future<void> locationPermission() async {
+    geolocator = Geolocator()..forceAndroidLocationManager;
+    GeolocationStatus stat =
+        await Geolocator().checkGeolocationPermissionStatus();
+    if (stat != GeolocationStatus.granted) {
+      try {
+        await geolocator.getCurrentPosition();
+        permissionStatus =
+            await Geolocator().checkGeolocationPermissionStatus();
+      } catch (e) {
+        permissionStatus =
+            await Geolocator().checkGeolocationPermissionStatus();
+      }
+    } else {
+      permissionStatus = stat;
+    }
+  }
+
+  @override
+  void initState() {
+    locationPermission().then((_) {
+      setState(() {});
+    });
+    super.initState();
+  }
 
   List<Widget> itemWidgets = <Widget>[
     Builder(
@@ -31,24 +66,59 @@ class HomePageState extends State<HomePage> {
   ];
 
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: itemWidgets[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), title: Text("Home")),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person), title: Text("Profile")),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.remove_red_eye), title: Text("Random")),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        selectedItemColor: Colors.blue,
-      ),
-    );
+    return permissionStatus == GeolocationStatus.granted
+        ? Scaffold(
+            body: itemWidgets[_selectedIndex],
+            bottomNavigationBar: BottomNavigationBar(
+              items: <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.home), title: Text("Home")),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.person), title: Text("Profile")),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.event), title: Text("Events")),
+              ],
+              currentIndex: _selectedIndex,
+              onTap: (index) {
+                setState(() {
+                  _selectedIndex = index;
+                });
+              },
+              selectedItemColor: Colors.white,
+              backgroundColor: Colors.grey,
+            ),
+            floatingActionButton: FloatingActionButton(
+              child: Icon(Icons.exit_to_app),
+              onPressed: () {
+                OpeningScreenState.authStatus = AuthStatus.NOT_LOGGED_IN;
+                auth.logOut();
+                Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (BuildContext c) {
+                  return UserChoice();
+                }), (Route<dynamic> route) => false);
+              },backgroundColor: Colors.grey,
+            ),
+          )
+        : Scaffold(
+            body: Container(
+              child: Center(
+                child: Column(
+                  children: <Widget>[
+                    Text(
+                        "You cannot use the app without giving permission.(Choose 'Allow all the time')"),
+                    RaisedButton(
+                      child: Text("OK"),
+                      onPressed: () {
+                        locationPermission().then((_) {
+                          setState(() {});
+                        });
+                      },
+                    )
+                  ],
+                  mainAxisAlignment: MainAxisAlignment.center,
+                ),
+              ),
+            ),
+          );
   }
 }

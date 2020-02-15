@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'homePage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'authentication.dart';
+import 'main.dart';
+import 'login.dart';
 
 class VolunteerSignup extends StatefulWidget {
   VolunteerSignupState createState() => VolunteerSignupState();
@@ -10,10 +14,15 @@ class VolunteerSignupState extends State<VolunteerSignup> {
   String _email, _password, _name, address, age, mobileNum, gender;
   final passwordController = TextEditingController();
 
+  String errorMsg = "";
+
   final double ratio = 0.9;
   final double gap = 20;
 
   bool male = false, female = false, other = false;
+  bool isProcessing = false;
+
+  Auth auth = new Auth();
 
   @override
   void dispose() {
@@ -33,6 +42,8 @@ class VolunteerSignupState extends State<VolunteerSignup> {
               onChanged: (value) {
                 setState(() {
                   male = value;
+                  female = false;
+                  other = false;
                 });
               },
             )
@@ -46,6 +57,8 @@ class VolunteerSignupState extends State<VolunteerSignup> {
               onChanged: (value) {
                 setState(() {
                   female = value;
+                  male = false;
+                  other = false;
                 });
               },
             )
@@ -59,6 +72,8 @@ class VolunteerSignupState extends State<VolunteerSignup> {
               onChanged: (value) {
                 setState(() {
                   other = value;
+                  male = false;
+                  female = false;
                 });
               },
             )
@@ -72,7 +87,8 @@ class VolunteerSignupState extends State<VolunteerSignup> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView(
+        body: Stack(children: <Widget>[
+      ListView(
         children: <Widget>[
           Center(
             child: Image.asset("images/placeholder.jpg"),
@@ -95,6 +111,8 @@ class VolunteerSignupState extends State<VolunteerSignup> {
                   child: TextFormField(
                     decoration: InputDecoration(labelText: "Address"),
                     onSaved: (input) => address = input,
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null,
                   ),
                   width: MediaQuery.of(context).size.width * ratio,
                 ),
@@ -141,6 +159,7 @@ class VolunteerSignupState extends State<VolunteerSignup> {
                     decoration: InputDecoration(labelText: "Password"),
                     onSaved: (input) => _password = input,
                     controller: passwordController,
+                    obscureText: true,
                   ),
                   width: MediaQuery.of(context).size.width * ratio,
                 ),
@@ -153,24 +172,34 @@ class VolunteerSignupState extends State<VolunteerSignup> {
                     validator: (input) => input != passwordController.text
                         ? "Password re-entered incorrectly"
                         : null,
+                    obscureText: true,
                   ),
                   width: MediaQuery.of(context).size.width * ratio,
                 ),
                 SizedBox(
                   height: 20,
                 ),
-                ButtonTheme(
-                  child: RaisedButton(
-                    child: Text(
-                      "CREATE ACCOUNT",
-                      style: TextStyle(color: Colors.white),
+                Builder(builder: (BuildContext c) {
+                  return ButtonTheme(
+                    child: RaisedButton(
+                      child: Text(
+                        "CREATE ACCOUNT",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () {
+                        submit(c);
+                      },
                     ),
-                    onPressed: () {
-                      submit();
-                    },
+                    minWidth: MediaQuery.of(context).size.width * 0.6,
+                    height: MediaQuery.of(context).size.width * 0.1,
+                  );
+                }),
+                Align(
+                  child: Text(
+                    errorMsg,
+                    style: TextStyle(color: Colors.red),
                   ),
-                  minWidth: MediaQuery.of(context).size.width * 0.6,
-                  height: MediaQuery.of(context).size.width * 0.1,
+                  alignment: Alignment.center,
                 ),
                 ButtonTheme(
                   child: FlatButton(
@@ -181,7 +210,7 @@ class VolunteerSignupState extends State<VolunteerSignup> {
                     onPressed: () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (BuildContext c) {
-                        return HomePage();
+                        return LoginPage();
                       }));
                     },
                   ),
@@ -194,12 +223,41 @@ class VolunteerSignupState extends State<VolunteerSignup> {
           )
         ],
       ),
-    );
+      isProcessing
+          ? Container(
+              child: Center(child: CircularProgressIndicator()),
+              decoration: BoxDecoration(color: Colors.black.withOpacity(0.5)),
+            )
+          : SizedBox(
+              height: 0,
+              width: 0,
+            )
+    ]));
   }
 
-  void submit() {
+  void submit(BuildContext context) {
     if (formKey.currentState.validate()) {
       formKey.currentState.save();
+      setState(() {
+        errorMsg = "";
+        isProcessing = true;
+      });
+      auth.signUp(_email, _password).then((_) {
+        setState(() {
+          isProcessing = false;
+          errorMsg = "";
+        });
+        Scaffold.of(context).showSnackBar(SnackBar(
+          content: Text("A verification email has been sent to your Email-ID"),
+        ));
+
+        
+      }).catchError((e) {
+        setState(() {
+          isProcessing = false;
+          errorMsg = e.message;
+        });
+      });
     }
   }
 }

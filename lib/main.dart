@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'userChoice.dart';
 import 'homePage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() => runApp(MyApp());
 
@@ -19,18 +20,47 @@ class MyApp extends StatelessWidget {
   }
 }
 
+enum AuthStatus {
+  NOT_DETERMINED,
+  NOT_LOGGED_IN,
+  LOGGED_IN,
+}
+
 class OpeningScreen extends StatefulWidget {
   OpeningScreenState createState() => OpeningScreenState();
 }
 
 class OpeningScreenState extends State<OpeningScreen> {
+  static AuthStatus authStatus = AuthStatus.NOT_DETERMINED;
+
   @override
   void initState() {
-    Timer(Duration(seconds: 3), () {
-      Navigator.push(context, MaterialPageRoute(builder: (BuildContext c) {
-        return UserChoice();
-      }));
+    FirebaseAuth.instance.currentUser().then((FirebaseUser user) {
+      if (user == null) {
+        authStatus = AuthStatus.NOT_LOGGED_IN;
+      } else {
+        if (user.isEmailVerified) {
+          authStatus = AuthStatus.LOGGED_IN;
+        } else {
+          authStatus = AuthStatus.NOT_LOGGED_IN;
+        }
+      }
     });
+    Timer(Duration(seconds: 3), () {
+      print(authStatus);
+      if (authStatus == AuthStatus.NOT_LOGGED_IN) {
+        Navigator.of(context)
+            .pushReplacement(MaterialPageRoute(builder: (BuildContext c) {
+          return UserChoice();
+        }));
+      } else if (authStatus == AuthStatus.LOGGED_IN) {
+        Navigator.of(context)
+            .pushReplacement(MaterialPageRoute(builder: (BuildContext c) {
+          return HomePage();
+        }));
+      }
+    });
+
     super.initState();
   }
 
