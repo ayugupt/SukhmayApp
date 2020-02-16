@@ -5,10 +5,11 @@ class Auth {
   AuthResult result;
   FirebaseUser user;
 
-  Future<void> signUp(String email, String password) async {
+  Future<String> signUp(String email, String password) async {
     result = await auth.createUserWithEmailAndPassword(email: email, password: password);
     user = result.user;
     await user.sendEmailVerification();
+    return user.uid;
   }
 
   Future<bool> signIn(String email, String password) async {
@@ -25,5 +26,10 @@ class Auth {
 
   Future<void> logOut()async{
     await auth.signOut();
+  }
+
+  Future<String> returnUid() async{
+    user = await auth.currentUser();
+    return user.uid;
   }
 }

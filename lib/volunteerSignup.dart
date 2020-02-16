@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'homePage.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'authentication.dart';
-import 'main.dart';
 import 'login.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'databaseClass.dart';
+import 'JsonClass.dart';
+import 'dart:io';
 
 class VolunteerSignup extends StatefulWidget {
   VolunteerSignupState createState() => VolunteerSignupState();
@@ -13,6 +15,37 @@ class VolunteerSignupState extends State<VolunteerSignup> {
   final formKey = GlobalKey<FormState>();
   String _email, _password, _name, address, age, mobileNum, gender;
   final passwordController = TextEditingController();
+
+  String path;
+
+  Future<void> _write(String text) async {
+    final Directory directory = await getApplicationDocumentsDirectory();
+    path = directory.path;
+    final File file = File('${directory.path}/data.json');
+    print("${directory.path}");
+    await file.writeAsString(text);
+    /*
+    final dir = Directory(directory.path);
+    await dir.delete();*/
+  }
+
+  final FirebaseStorage _storage =
+      FirebaseStorage(storageBucket: "gs://swaraksha-3abd1.appspot.com");
+
+  StorageUploadTask _uploadTask;
+  String bucketFilePath;
+
+  DatabaseClass dataBase = new DatabaseClass();
+  DatabaseJson jsonData = new DatabaseJson();
+
+  Future<void> _startUpload(String uid) async {
+    bucketFilePath = '$uid/$uid.json';
+
+    _uploadTask =
+        _storage.ref().child(bucketFilePath).putFile(File("$path/data.json"));
+
+    await _uploadTask.onComplete;
+  }
 
   String errorMsg = "";
 
@@ -249,7 +282,32 @@ class VolunteerSignupState extends State<VolunteerSignup> {
         errorMsg = "";
         isProcessing = true;
       });
-      auth.signUp(_email, _password).then((_) {
+      auth.signUp(_email, _password).then((String id) {
+        String data;
+        if (male == true) {
+          data =
+              "{\n\"Name\":\"$_name\",\n\"Address\":\"$address\",\n\"MobileNo\":\"$mobileNum\",\n\"Email-ID\":\"$_email\",\n\"Gender\":\"Male\"\n}";
+        } else if (female == true) {
+          data =
+              "{\n\"Name\":\"$_name\",\n\"Address\":\"$address\",\n\"MobileNo\":\"$mobileNum\",\n\"Email-ID\":\"$_email\",\n\"Gender\":\"Female\"\n}";
+        } else if (other == true) {
+          data =
+              "{\n\"Name\":\"$_name\",\n\"Address\":\"$address\",\n\"MobileNo\":\"$mobileNum\",\n\"Email-ID\":\"$_email\",\n\"Gender\":\"Other\"\n}";
+        }
+
+        _write(data).then((_) {
+          _startUpload(id).then((_) {
+            final dir = Directory(path);
+            dir.deleteSync(recursive: true);
+          });
+        });
+
+       jsonData.sos = false;
+       jsonData.lat = null;
+       jsonData.long = null;
+
+       dataBase.pushDataWithoutKey("Citizen/$id", jsonData.toJson());
+
         setState(() {
           isProcessing = false;
           errorMsg = "";
