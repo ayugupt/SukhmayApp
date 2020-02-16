@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Swaraksha',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -68,12 +68,62 @@ class OpeningScreenState extends State<OpeningScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        child: Center(child: Image.asset("images/placeholder.jpg")),
-        decoration: BoxDecoration(
+        child:Center
+          (child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children:<Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children:<Widget>[
+                    Text(
+                    'Made with ',
+                    style: TextStyle(
+                      fontSize: 30,
+                      color: Colors.black,
+                    ),
+                  ),
+                    Text(
+                    '\u{2665} ',
+                    style: TextStyle(
+                      fontSize: 60,
+                      color: Colors.red[700],
+                    ),
+                  ),
+                    Text(
+                    'at',
+                    style: TextStyle(
+                      fontSize: 30,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children:<Widget>[
+                  Image.asset("images/innomages_logo.png"
+                    ),
+                  Text(
+                    ' and ',
+                    style: TextStyle(
+                      fontSize: 30,
+                      color: Colors.black,
+                    ),
+                  ),
+                  Image.asset("images/s_logo.png"
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-                colors: [Colors.blue[500], Colors.blue[200]],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight)),
+                colors: [Colors.deepOrange[700],Colors.white10,Colors.lightGreen[800],],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter)),
       ),
     );
   }

@@ -91,7 +91,7 @@ class VolunteerSignupState extends State<VolunteerSignup> {
       ListView(
         children: <Widget>[
           Center(
-            child: Image.asset("images/placeholder.jpg"),
+            child: Image.asset("images/innomages_logo.png"),
           ),
           Form(
             key: formKey,

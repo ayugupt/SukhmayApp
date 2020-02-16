@@ -29,7 +29,18 @@ class UserChoiceState extends State<UserChoice> {
             ),
             ButtonTheme(
               child: RaisedButton(
-                child: Text("VOLUNTEER"),
+                shape: RoundedRectangleBorder(
+                  borderRadius: new BorderRadius.circular(23.0),
+                  side: BorderSide(color: Colors.black)
+                ),
+                child: Text(
+                  'Volunteer',
+                  style: TextStyle(
+                    fontSize: 40,
+                    color: Colors.white,
+                  ),
+                ),
+                color: Colors.green,
                 onPressed: () {
                   Navigator.push(context,
                       MaterialPageRoute(builder: (BuildContext context) {
@@ -38,26 +49,37 @@ class UserChoiceState extends State<UserChoice> {
                 },
               ),
               minWidth: MediaQuery.of(context).size.width * 0.5,
-              height: MediaQuery.of(context).size.width * 0.2,
+              height: MediaQuery.of(context).size.width * 0.15,
             ),
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.05,
             ),
             ButtonTheme(
               child: RaisedButton(
-                child: Text("CITIZEN"),
+                shape: RoundedRectangleBorder(
+                  borderRadius: new BorderRadius.circular(23.0),
+                  side: BorderSide(color: Colors.black)
+                ),
+                color:Colors.redAccent[400],
+                child: Text(
+                  'Citizen',
+                  style: TextStyle(
+                    fontSize: 40,
+                    color: Colors.white,
+                  ),
+                ),
                 onPressed: () {},
               ),
               minWidth: MediaQuery.of(context).size.width * 0.5,
-              height: MediaQuery.of(context).size.width * 0.2,
+              height: MediaQuery.of(context).size.width * 0.15,
             ),
           ],
         ),
         decoration: BoxDecoration(
             gradient: LinearGradient(
-                colors: [Colors.blue[500], Colors.blue[200]],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight)),
+                colors: [Colors.blue[200],Colors.white],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter)),
       ),
     ));
   }
