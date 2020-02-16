@@ -62,9 +62,21 @@ class HomePageState extends State<HomePage> {
         return Center(
           child: Container(
             child: InkWell(
-              child: Image.asset(
-                "images/sos.png",
-                fit: BoxFit.fill,
+              child: Material(
+                child: Container(
+                  alignment: Alignment(0,0),
+                  child: Text(
+                    'SOS',
+                    style: TextStyle(
+                      fontSize: 90,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                color: Colors.red[800],
+                shape: CircleBorder(),
+                elevation: 30.0,
+                shadowColor: Colors.black,
               ),
               onTap: () async {
                 String uid = await auth.returnUid();
@@ -88,7 +100,7 @@ class HomePageState extends State<HomePage> {
                         "Lat: ${position.latitude} Long: ${position.longitude}"),
                   ));
                 });
-                Timer(Duration(minutes: 5), () {
+                Timer(Duration(seconds: 10), () {
                   print("cancelled");
                   DatabaseJson finalJson = jsonData;
                   finalJson.sos = false;
@@ -98,7 +110,6 @@ class HomePageState extends State<HomePage> {
                 });
               },
             ),
-            decoration: BoxDecoration(color: Colors.black),
             width: MediaQuery.of(c).size.width * 0.7,
             height: MediaQuery.of(c).size.width * 0.7,
           ),
