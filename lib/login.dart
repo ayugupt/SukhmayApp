@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'authentication.dart';
 import 'homePage.dart';
 import 'main.dart';
+import 'volunteerSignup.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'modalWidget.dart';
+import 'codeInput.dart';
+import 'databaseClass.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPageState createState() => LoginPageState();
@@ -13,12 +18,23 @@ class LoginPageState extends State<LoginPage> {
   final double gap = 20;
 
   String _email, _password;
+  String mobNum;
+
+  static String code;
 
   bool isProcessing = false;
 
   Auth auth = new Auth();
 
   String errorMsg = "";
+
+  bool phoneAuth = false;
+  String logInChoice = "Log In using Mobile Number";
+  String emailOrNum = "Email-ID";
+
+  FirebaseAuth autho = FirebaseAuth.instance;
+
+  DatabaseClass database = new DatabaseClass();
 
   @override
   Widget build(BuildContext context) {
@@ -33,22 +49,33 @@ class LoginPageState extends State<LoginPage> {
             child: Column(children: <Widget>[
               Container(
                 child: TextFormField(
-                  decoration: InputDecoration(labelText: "Email-ID"),
-                  onSaved: (input) => _email = input,
+                  decoration: InputDecoration(labelText: emailOrNum),
+                  onSaved: (input) {
+                    if (phoneAuth) {
+                      mobNum = input;
+                    } else if (!phoneAuth) {
+                      _email = input;
+                    }
+                  },
                 ),
                 width: MediaQuery.of(context).size.width * ratio,
               ),
               SizedBox(
                 height: gap,
               ),
-              Container(
-                child: TextFormField(
-                  decoration: InputDecoration(labelText: "Password"),
-                  onSaved: (input) => _password = input,
-                  obscureText: true,
-                ),
-                width: MediaQuery.of(context).size.width * ratio,
-              ),
+              !phoneAuth
+                  ? Container(
+                      child: TextFormField(
+                        decoration: InputDecoration(labelText: "Password"),
+                        onSaved: (input) => _password = input,
+                        obscureText: true,
+                      ),
+                      width: MediaQuery.of(context).size.width * ratio,
+                    )
+                  : SizedBox(
+                      height: 0,
+                      width: 0,
+                    ),
               SizedBox(
                 height: gap,
               ),
@@ -59,11 +86,39 @@ class LoginPageState extends State<LoginPage> {
                     style: TextStyle(color: Colors.white),
                   ),
                   onPressed: () {
-                    saveAndLogin(context);
+                    if (!phoneAuth) {
+                      saveAndLoginEmail(context);
+                    } else {
+                      saveAndLoginMobile();
+                    }
                   },
                 ),
                 minWidth: MediaQuery.of(context).size.width * 0.6,
                 height: MediaQuery.of(context).size.width * 0.1,
+              ),
+              FlatButton(
+                child: Text(logInChoice),
+                onPressed: () {
+                  setState(() {
+                    phoneAuth = !phoneAuth;
+                    if (phoneAuth == true) {
+                      logInChoice = "Log In using Email-ID";
+                      emailOrNum = "Mobile Number";
+                    } else {
+                      logInChoice = "Log In using Mobile Number";
+                      emailOrNum = "Email-ID";
+                    }
+                  });
+                },
+              ),
+              FlatButton(
+                child: Text("Don't have an Account? Sign Up!"),
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (BuildContext c) {
+                    return VolunteerSignup();
+                  }));
+                },
               ),
               SizedBox(
                 height: 10,
@@ -71,7 +126,10 @@ class LoginPageState extends State<LoginPage> {
               Align(
                 child: Text(
                   errorMsg,
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(
+                    color: Colors.red,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
                 alignment: Alignment.center,
               ),
@@ -89,7 +147,7 @@ class LoginPageState extends State<LoginPage> {
     ]));
   }
 
-  void saveAndLogin(BuildContext context) {
+  void saveAndLoginEmail(BuildContext context) {
     setState(() {
       errorMsg = "";
       isProcessing = true;
@@ -116,5 +174,78 @@ class LoginPageState extends State<LoginPage> {
         errorMsg = e.message;
       });
     });
+  }
+
+  void saveAndLoginMobile() async {
+    formKey.currentState.save();
+    setState(() {
+      isProcessing = true;
+    });
+
+    try {
+      bool user = await database.checkNumber("Users", "+91" + mobNum);
+      if (user == true) {
+        await autho.verifyPhoneNumber(
+            phoneNumber: "+91" + mobNum,
+            verificationCompleted: (credential) async {
+              print("done");
+              await autho.signInWithCredential(credential);
+              OpeningScreenState.authStatus = AuthStatus.LOGGED_IN;
+              Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (cntxt) {
+                return HomePage();
+              }), (Route<dynamic> route) => false);
+            },
+            verificationFailed: (e) {
+              setState(() {
+                isProcessing = false;
+                errorMsg = e.message;
+              });
+            },
+            codeSent: (id, [a]) {
+              Navigator.push(
+                      context,
+                      PopupLayout(
+                          left: 20,
+                          right: 20,
+                          top: 100,
+                          bottom: 250,
+                          child: CodeInput()))
+                  .then((_) {
+                autho
+                    .signInWithCredential(PhoneAuthProvider.getCredential(
+                        verificationId: id, smsCode: code))
+                    .then((result) {
+                  OpeningScreenState.authStatus = AuthStatus.LOGGED_IN;
+                  Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (cnt) {
+                    return HomePage();
+                  }), (Route<dynamic> route) => false);
+                }).catchError((e) {
+                  setState(() {
+                    isProcessing = false;
+                    errorMsg = e.message;
+                  });
+                });
+              });
+              print("sent");
+            },
+            codeAutoRetrievalTimeout: (id) {
+              print(id);
+            },
+            timeout: Duration(seconds: 20));
+      } else {
+        setState(() {
+          isProcessing = false;
+          errorMsg =
+              "Your Mobile number is not registered. Please Sign Up using Mobile number";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isProcessing = false;
+        errorMsg = e.message;
+      });
+    }
   }
 }

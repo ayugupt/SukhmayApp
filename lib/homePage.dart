@@ -1,12 +1,11 @@
 import 'dart:async';
-import 'package:http/http.dart';
+import 'package:sukhmay/login.dart';
 
 import 'profilePage.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'authentication.dart';
 import 'main.dart';
-import 'userChoice.dart';
 import 'getUserData.dart';
 
 import 'JsonClass.dart';
@@ -45,13 +44,44 @@ class HomePageState extends State<HomePage> {
     }
   }
 
+  static Future<StreamSubscription<Position>> streamPositon(String path) async {
+    String uid = await auth.returnUid();
+    return geolocator
+        .getPositionStream(locationOptions)
+        .listen((Position position) {
+      jsonData.lat = position.latitude;
+      jsonData.long = position.longitude;
+      //jsonData.sos = true;
+      dataBase.pushDataWithoutKey(path + "/$uid/Latitude", position.latitude);
+      dataBase.pushDataWithoutKey(path + "/$uid/Longitude", position.longitude);
+    });
+  }
+
   static DatabaseJson jsonData = new DatabaseJson();
   static DatabaseClass dataBase = new DatabaseClass();
 
+  static StreamSubscription<Position> alwaysPositionStream;
+  static StreamSubscription<Position> sosPositionStream;
+
   @override
   void initState() {
-    locationPermission().then((_) {
+    locationPermission().then((_) async {
       setState(() {});
+      //String uid = await auth.returnUid();
+      if (permissionStatus == GeolocationStatus.granted) {
+        alwaysPositionStream = await streamPositon("Users");
+        /*
+        alwaysPositionStream = geolocator
+            .getPositionStream(locationOptions)
+            .listen((Position position) {
+          //jsonData.sos = true;
+          dataBase.pushDataWithoutKey("Users/$uid/Latitude", position.latitude);
+          dataBase.pushDataWithoutKey(
+              "Users/$uid/Longitude", position.longitude);
+          print(position.latitude);
+          //position.latitude and position.longitude is to be sent to database
+        });*/
+      }
     });
     super.initState();
   }
@@ -64,7 +94,7 @@ class HomePageState extends State<HomePage> {
             child: InkWell(
               child: Material(
                 child: Container(
-                  alignment: Alignment(0,0),
+                  alignment: Alignment(0, 0),
                   child: Text(
                     'SOS',
                     style: TextStyle(
@@ -79,16 +109,18 @@ class HomePageState extends State<HomePage> {
                 shadowColor: Colors.black,
               ),
               onTap: () async {
-                String uid = await auth.returnUid();
-
+                alwaysPositionStream.cancel();
+                sosPositionStream = await streamPositon("SOS");
+                //String uid = await auth.returnUid();
+/*
                 StreamSubscription<Position> positionStream = geolocator
                     .getPositionStream(locationOptions)
                     .listen((Position position) {
                   jsonData.lat = position.latitude;
                   jsonData.long = position.longitude;
-                  jsonData.sos = true;
+                  //jsonData.sos = true;
                   dataBase.pushDataWithoutKey(
-                      "Citizen/$uid", jsonData.toJson());
+                      "SOS/$uid", jsonData.toJsonPosition());
                   print(position == null
                       ? 'Unknown'
                       : position.latitude.toString() +
@@ -99,14 +131,10 @@ class HomePageState extends State<HomePage> {
                     content: Text(
                         "Lat: ${position.latitude} Long: ${position.longitude}"),
                   ));
-                });
-                Timer(Duration(seconds: 10), () {
+                });*/
+                Timer(Duration(minutes: 5), () {
                   print("cancelled");
-                  DatabaseJson finalJson = jsonData;
-                  finalJson.sos = false;
-                  dataBase.pushDataWithoutKey(
-                      "Citizen/$uid", finalJson.toJson());
-                  positionStream.cancel();
+                  sosPositionStream.cancel();
                 });
               },
             ),
@@ -163,7 +191,7 @@ class HomePageState extends State<HomePage> {
                 auth.logOut();
                 Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (BuildContext c) {
-                  return UserChoice();
+                  return LoginPage();
                 }), (Route<dynamic> route) => false);
               },
               backgroundColor: Colors.grey,
@@ -179,8 +207,23 @@ class HomePageState extends State<HomePage> {
                     RaisedButton(
                       child: Text("OK"),
                       onPressed: () {
-                        locationPermission().then((_) {
+                        locationPermission().then((_) async {
                           setState(() {});
+                          //String uid = await auth.returnUid();
+                          if (permissionStatus == GeolocationStatus.granted) {
+                            alwaysPositionStream = await streamPositon("Users");
+                            /*StreamSubscription<Position> positionStream =
+                                geolocator
+                                    .getPositionStream(locationOptions)
+                                    .listen((Position position) {
+                              //jsonData.sos = true;
+                              dataBase.pushDataWithoutKey(
+                                  "Users/$uid/Latitude", position.latitude);
+                              dataBase.pushDataWithoutKey(
+                                  "Users/$uid/Longitude", position.longitude);
+                              //position.latitude and position.longitude is to be sent to database
+                            });*/
+                          }
                         });
                       },
                     )

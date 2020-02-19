@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sukhmay/homePage.dart';
+import 'package:sukhmay/main.dart';
 import 'authentication.dart';
 import 'login.dart';
 import 'package:path_provider/path_provider.dart';
@@ -6,6 +8,9 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'databaseClass.dart';
 import 'JsonClass.dart';
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'modalWidget.dart';
+import 'codeInput.dart';
 
 class VolunteerSignup extends StatefulWidget {
   VolunteerSignupState createState() => VolunteerSignupState();
@@ -15,6 +20,11 @@ class VolunteerSignupState extends State<VolunteerSignup> {
   final formKey = GlobalKey<FormState>();
   String _email, _password, _name, address, age, mobileNum, gender;
   final passwordController = TextEditingController();
+
+  FirebaseAuth phoneAuth = FirebaseAuth.instance;
+  static String code;
+  String verificationId;
+  PhoneAuthProvider phoneAuthProvider = new PhoneAuthProvider();
 
   String path;
 
@@ -56,6 +66,9 @@ class VolunteerSignupState extends State<VolunteerSignup> {
   bool isProcessing = false;
 
   Auth auth = new Auth();
+
+  String signUpText = "Sign Up using Mobile Number";
+  bool numAuth = false;
 
   @override
   void dispose() {
@@ -170,9 +183,9 @@ class VolunteerSignupState extends State<VolunteerSignup> {
                 genderCheck(),
                 Container(
                     child: TextFormField(
-                      decoration: InputDecoration(labelText: "Email-ID"),
-                      validator: (input) =>
-                          !input.contains('@') ? "Invalid email-ID" : null,
+                      decoration: InputDecoration(
+                          labelText:
+                              "Email-ID" + (!numAuth ? "" : "(Optional)")),
                       onSaved: (input) => _email = input,
                     ),
                     width: MediaQuery.of(context).size.width * ratio),
@@ -191,31 +204,42 @@ class VolunteerSignupState extends State<VolunteerSignup> {
                 SizedBox(
                   height: gap,
                 ),
-                Container(
-                  child: TextFormField(
-                    decoration: InputDecoration(labelText: "Password"),
-                    onSaved: (input) => _password = input,
-                    validator: (input) => input.length > 5
-                        ? null
-                        : "Password should contain more than 5 letters",
-                    controller: passwordController,
-                    obscureText: true,
-                  ),
-                  width: MediaQuery.of(context).size.width * ratio,
-                ),
+                !numAuth
+                    ? Container(
+                        child: TextFormField(
+                          decoration: InputDecoration(labelText: "Password"),
+                          onSaved: (input) => _password = input,
+                          validator: (input) => input.length > 5
+                              ? null
+                              : "Password should contain more than 5 letters",
+                          controller: passwordController,
+                          obscureText: true,
+                        ),
+                        width: MediaQuery.of(context).size.width * ratio,
+                      )
+                    : SizedBox(
+                        height: 0,
+                        width: 0,
+                      ),
                 SizedBox(
                   height: gap,
                 ),
-                Container(
-                  child: TextFormField(
-                    decoration: InputDecoration(labelText: "Re-enter password"),
-                    validator: (input) => input != passwordController.text
-                        ? "Password re-entered incorrectly"
-                        : null,
-                    obscureText: true,
-                  ),
-                  width: MediaQuery.of(context).size.width * ratio,
-                ),
+                !numAuth
+                    ? Container(
+                        child: TextFormField(
+                          decoration:
+                              InputDecoration(labelText: "Re-enter password"),
+                          validator: (input) => input != passwordController.text
+                              ? "Password re-entered incorrectly"
+                              : null,
+                          obscureText: true,
+                        ),
+                        width: MediaQuery.of(context).size.width * ratio,
+                      )
+                    : SizedBox(
+                        height: 0,
+                        width: 0,
+                      ),
                 SizedBox(
                   height: 20,
                 ),
@@ -227,7 +251,11 @@ class VolunteerSignupState extends State<VolunteerSignup> {
                         style: TextStyle(color: Colors.white),
                       ),
                       onPressed: () {
-                        submit(c);
+                        if (numAuth) {
+                          numberSignUp(c);
+                        } else {
+                          submit(c);
+                        }
                       },
                     ),
                     minWidth: MediaQuery.of(context).size.width * 0.6,
@@ -240,6 +268,19 @@ class VolunteerSignupState extends State<VolunteerSignup> {
                     style: TextStyle(color: Colors.red),
                   ),
                   alignment: Alignment.center,
+                ),
+                FlatButton(
+                  child: Text(signUpText),
+                  onPressed: () {
+                    setState(() {
+                      numAuth = !numAuth;
+                      if (numAuth) {
+                        signUpText = "Sign Up using Email-ID";
+                      } else {
+                        signUpText = "Sign Up using Mobile Number";
+                      }
+                    });
+                  },
                 ),
                 ButtonTheme(
                   child: FlatButton(
@@ -302,11 +343,12 @@ class VolunteerSignupState extends State<VolunteerSignup> {
           });
         });
 
-       jsonData.sos = false;
-       jsonData.lat = null;
-       jsonData.long = null;
+        //jsonData.sos = false;
+        jsonData.lat = null;
+        jsonData.long = null;
+        jsonData.mobileNumber = "+91" + mobileNum;
 
-       dataBase.pushDataWithoutKey("Citizen/$id", jsonData.toJson());
+        dataBase.pushDataWithoutKey("Users/$id", jsonData.toJson());
 
         setState(() {
           isProcessing = false;
@@ -319,6 +361,118 @@ class VolunteerSignupState extends State<VolunteerSignup> {
         setState(() {
           isProcessing = false;
           errorMsg = e.message;
+        });
+      });
+    }
+  }
+
+  void numberSignUp(BuildContext context) {
+    if (formKey.currentState.validate()) {
+      setState(() {
+        errorMsg = "";
+        isProcessing = true;
+      });
+      formKey.currentState.save();
+      phoneAuth
+          .verifyPhoneNumber(
+              phoneNumber: "+91" + mobileNum,
+              timeout: Duration(seconds: 20),
+              verificationCompleted: (credential) async {
+                setState(() {
+                  isProcessing = true;
+                });
+                await phoneAuth.signInWithCredential(credential);
+                OpeningScreenState.authStatus = AuthStatus.LOGGED_IN;
+                Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (c) {
+                  return HomePage();
+                }), (Route<dynamic> route) => false);
+              },
+              verificationFailed: (e) {
+                setState(() {
+                  errorMsg = e.message;
+                  isProcessing = false;
+                });
+              },
+              codeAutoRetrievalTimeout: (id) {
+                setState(() {
+                  verificationId = id;
+                });
+              },
+              codeSent: (id, [a]) {
+                Scaffold.of(context).showSnackBar(SnackBar(
+                  content: Text("SMS has been sent"),
+                ));
+                verificationId = id;
+                Navigator.push(
+                  context,
+                  PopupLayout(
+                      top: 100,
+                      left: 20,
+                      right: 20,
+                      bottom: 250,
+                      child: CodeInput()),
+                ).then((_) {
+                  setState(() {
+                    isProcessing = true;
+                    print(code);
+                    print(verificationId);
+                    phoneAuth
+                        .signInWithCredential(PhoneAuthProvider.getCredential(
+                            verificationId: verificationId, smsCode: code))
+                        .then((result) {
+                      OpeningScreenState.authStatus = AuthStatus.LOGGED_IN;
+                      String data;
+                      if (male == true) {
+                        data =
+                            "{\n\"Name\":\"$_name\",\n\"Address\":\"$address\",\n\"MobileNo\":\"$mobileNum\",\n\"Email-ID\":\"$_email\",\n\"Gender\":\"Male\"\n}";
+                      } else if (female == true) {
+                        data =
+                            "{\n\"Name\":\"$_name\",\n\"Address\":\"$address\",\n\"MobileNo\":\"$mobileNum\",\n\"Email-ID\":\"$_email\",\n\"Gender\":\"Female\"\n}";
+                      } else if (other == true) {
+                        data =
+                            "{\n\"Name\":\"$_name\",\n\"Address\":\"$address\",\n\"MobileNo\":\"$mobileNum\",\n\"Email-ID\":\"$_email\",\n\"Gender\":\"Other\"\n}";
+                      }
+
+                      _write(data).then((_) {
+                        _startUpload(result.user.uid).then((_) {
+                          final dir = Directory(path);
+                          dir.deleteSync(recursive: true);
+                          Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (cntxt) {
+                            return HomePage();
+                          }), (Route<dynamic> route) => false);
+
+                          setState(() {
+                            isProcessing = false;
+                            errorMsg = "";
+                          });
+                        });
+                      });
+
+                      //jsonData.sos = false;
+                      jsonData.lat = null;
+                      jsonData.long = null;
+                      jsonData.mobileNumber = "+91" + mobileNum;
+
+                      dataBase.pushDataWithoutKey(
+                          "Users/${result.user.uid}", jsonData.toJson());
+
+                      //dataBase.pushNumber("Users/${result.user.uid}", "+91" + mobileNum);
+                    }).catchError((e) {
+                      setState(() {
+                        isProcessing = false;
+                        errorMsg = e.message;
+                      });
+                    });
+                  });
+                });
+              })
+          .then((_) {
+      }).catchError((e) {
+        setState(() {
+          errorMsg = e.message;
+          isProcessing = false;
         });
       });
     }

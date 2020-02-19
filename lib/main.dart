@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'userChoice.dart';
 import 'homePage.dart';
+import 'login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 void main() => runApp(MyApp());
@@ -39,7 +40,7 @@ class OpeningScreenState extends State<OpeningScreen> {
       if (user == null) {
         authStatus = AuthStatus.NOT_LOGGED_IN;
       } else {
-        if (user.isEmailVerified) {
+        if (user.isEmailVerified || user.phoneNumber != null) {
           authStatus = AuthStatus.LOGGED_IN;
         } else {
           authStatus = AuthStatus.NOT_LOGGED_IN;
@@ -51,7 +52,7 @@ class OpeningScreenState extends State<OpeningScreen> {
       if (authStatus == AuthStatus.NOT_LOGGED_IN) {
         Navigator.of(context)
             .pushReplacement(MaterialPageRoute(builder: (BuildContext c) {
-          return UserChoice();
+          return LoginPage();
         }));
       } else if (authStatus == AuthStatus.LOGGED_IN) {
         Navigator.of(context)

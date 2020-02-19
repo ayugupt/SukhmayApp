@@ -1,14 +1,20 @@
 class DatabaseJson {
   double lat, long;
-  bool sos;
+  String mobileNumber;
   String key;
 
   toJson() {
-    return
-    {
-    "Latitude": lat, 
-    "Longitude": long, 
-    "SOS": sos, 
+    return {
+      "Latitude": lat,
+      "Longitude": long,
+      "MobileNumber": mobileNumber,
+    };
+  }
+
+  toJsonPosition() {
+    return {
+      "Latitude": lat,
+      "Longitude": long,
     };
   }
 }
