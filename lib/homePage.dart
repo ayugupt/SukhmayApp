@@ -17,7 +17,9 @@ class HomePage extends StatefulWidget {
   HomePageState createState() => HomePageState();
 }
 
-class HomePageState extends State<HomePage>{
+AnimationController _controller;
+
+class HomePageState extends State<HomePage> with TickerProviderStateMixin{
   int _selectedIndex = 0;
 
   static bool maps = false;
@@ -70,6 +72,11 @@ class HomePageState extends State<HomePage>{
 
   @override
   void initState() {
+    _controller = AnimationController(
+      vsync: this,
+      lowerBound: 0.5,
+      duration: Duration(seconds: 3),
+    )..repeat();
     locationPermission().then((_) async {
       setState(() {});
       if (permissionStatus == GeolocationStatus.granted) {
@@ -109,19 +116,16 @@ class HomePageState extends State<HomePage>{
             child: InkWell(
               child: Material(
                 child: Container(
-                  alignment: Alignment(0, 0),
-                  child: Text(
-                    'SOS',
-                    style: TextStyle(
-                      fontSize: 90,
-                      color: Colors.white,
+                  decoration: BoxDecoration( 
+                    color: Colors.grey[850],
+                    border: Border.all(
+                      color: Colors.grey[850],
+                      width: 0,
                     ),
-                  ), 
+                  ),
+                  alignment: Alignment(0, 0),
+                  child: _buildBody(),
                 ),
-                color: Colors.red[800],
-                shape: CircleBorder(),
-                elevation: 30.0,
-                shadowColor: Colors.black,
               ),
               onLongPress: () async {
                 alwaysPositionStream.cancel();
@@ -133,8 +137,9 @@ class HomePageState extends State<HomePage>{
                 });
               },
             ),
-            width: MediaQuery.of(c).size.width * 0.7,
-            height: MediaQuery.of(c).size.width * 0.7, 
+            color:Colors.grey[850],
+            width: MediaQuery.of(c).size.width * 0.8,
+            height: MediaQuery.of(c).size.width * 0.8, 
             
           ),
         );
@@ -142,9 +147,56 @@ class HomePageState extends State<HomePage>{
     );
   }
 
+  Widget _buildBody() {
+      return AnimatedBuilder(
+        animation: CurvedAnimation(parent: _controller, curve: Curves.linear),
+        builder: (context, child) {
+          return Stack(
+            alignment: Alignment.center,
+            children: <Widget>[
+              _buildContainer((1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
+              _buildContainer(2*(1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
+              _buildContainer(3*(1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
+              _buildContainer(4*(1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
+              _buildContainer(5*(1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
+              _buildContainer(6*(1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
+              _buildContainer(7*(1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
+              _buildContainer(8*(1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
+              _buildContainer(400),
+              Align(
+                child: Text(
+                    'SOS',
+                    style: TextStyle(
+                      fontSize: 30,
+                      color: Colors.white,
+                    ),
+                  ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    Widget _buildContainer(double radius) {
+    return Container(
+      width: radius,
+      height: radius,
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.purple[(-80*_controller.value*_controller.value+120*_controller.value-35).round()*100-100],
+          width:radius*0.01,
+        ),
+        shape: BoxShape.circle,
+        color: Colors.purple[(-64*_controller.value*_controller.value+96*_controller.value-27).round()*100-300].withOpacity(1 - 0.5*_controller.value),
+      ),
+    );
+  }
+
   Widget build(BuildContext context) {
     return permissionStatus == GeolocationStatus.granted
         ? Scaffold(
+          backgroundColor: Colors.grey[850],
             body: itemWidgets[_selectedIndex],
             bottomNavigationBar: BottomNavigationBar(
               items: <BottomNavigationBarItem>[
