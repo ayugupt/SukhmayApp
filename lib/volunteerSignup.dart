@@ -343,7 +343,6 @@ class VolunteerSignupState extends State<VolunteerSignup> {
           });
         });
 
-        //jsonData.sos = false;
         jsonData.lat = null;
         jsonData.long = null;
         jsonData.mobileNumber = "+91" + mobileNum;
@@ -381,12 +380,10 @@ class VolunteerSignupState extends State<VolunteerSignup> {
                 setState(() {
                   isProcessing = true;
                 });
-                await phoneAuth.signInWithCredential(credential);
+                AuthResult result =
+                    await phoneAuth.signInWithCredential(credential);
+                pushDataToBucketAndDatabase(result);
                 OpeningScreenState.authStatus = AuthStatus.LOGGED_IN;
-                Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (c) {
-                  return HomePage();
-                }), (Route<dynamic> route) => false);
               },
               verificationFailed: (e) {
                 setState(() {
@@ -422,43 +419,7 @@ class VolunteerSignupState extends State<VolunteerSignup> {
                             verificationId: verificationId, smsCode: code))
                         .then((result) {
                       OpeningScreenState.authStatus = AuthStatus.LOGGED_IN;
-                      String data;
-                      if (male == true) {
-                        data =
-                            "{\n\"Name\":\"$_name\",\n\"Address\":\"$address\",\n\"MobileNo\":\"$mobileNum\",\n\"Email-ID\":\"$_email\",\n\"Gender\":\"Male\"\n}";
-                      } else if (female == true) {
-                        data =
-                            "{\n\"Name\":\"$_name\",\n\"Address\":\"$address\",\n\"MobileNo\":\"$mobileNum\",\n\"Email-ID\":\"$_email\",\n\"Gender\":\"Female\"\n}";
-                      } else if (other == true) {
-                        data =
-                            "{\n\"Name\":\"$_name\",\n\"Address\":\"$address\",\n\"MobileNo\":\"$mobileNum\",\n\"Email-ID\":\"$_email\",\n\"Gender\":\"Other\"\n}";
-                      }
-
-                      _write(data).then((_) {
-                        _startUpload(result.user.uid).then((_) {
-                          final dir = Directory(path);
-                          dir.deleteSync(recursive: true);
-                          Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (cntxt) {
-                            return HomePage();
-                          }), (Route<dynamic> route) => false);
-
-                          setState(() {
-                            isProcessing = false;
-                            errorMsg = "";
-                          });
-                        });
-                      });
-
-                      //jsonData.sos = false;
-                      jsonData.lat = null;
-                      jsonData.long = null;
-                      jsonData.mobileNumber = "+91" + mobileNum;
-
-                      dataBase.pushDataWithoutKey(
-                          "Users/${result.user.uid}", jsonData.toJson());
-
-                      //dataBase.pushNumber("Users/${result.user.uid}", "+91" + mobileNum);
+                      pushDataToBucketAndDatabase(result);
                     }).catchError((e) {
                       setState(() {
                         isProcessing = false;
@@ -468,13 +429,49 @@ class VolunteerSignupState extends State<VolunteerSignup> {
                   });
                 });
               })
-          .then((_) {
-      }).catchError((e) {
+          .then((_) {})
+          .catchError((e) {
         setState(() {
           errorMsg = e.message;
           isProcessing = false;
         });
       });
     }
+  }
+
+  void pushDataToBucketAndDatabase(AuthResult result) {
+    String data;
+    if (male == true) {
+      data =
+          "{\n\"Name\":\"$_name\",\n\"Address\":\"$address\",\n\"MobileNo\":\"$mobileNum\",\n\"Email-ID\":\"$_email\",\n\"Gender\":\"Male\"\n}";
+    } else if (female == true) {
+      data =
+          "{\n\"Name\":\"$_name\",\n\"Address\":\"$address\",\n\"MobileNo\":\"$mobileNum\",\n\"Email-ID\":\"$_email\",\n\"Gender\":\"Female\"\n}";
+    } else if (other == true) {
+      data =
+          "{\n\"Name\":\"$_name\",\n\"Address\":\"$address\",\n\"MobileNo\":\"$mobileNum\",\n\"Email-ID\":\"$_email\",\n\"Gender\":\"Other\"\n}";
+    }
+
+    _write(data).then((_) {
+      _startUpload(result.user.uid).then((_) {
+        final dir = Directory(path);
+        dir.deleteSync(recursive: true);
+        Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (cntxt) {
+          return HomePage();
+        }), (Route<dynamic> route) => false);
+
+        setState(() {
+          isProcessing = false;
+          errorMsg = "";
+        });
+      });
+    });
+
+    jsonData.lat = null;
+    jsonData.long = null;
+    jsonData.mobileNumber = "+91" + mobileNum;
+
+    dataBase.pushDataWithoutKey("Users/${result.user.uid}", jsonData.toJson());
   }
 }

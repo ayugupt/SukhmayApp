@@ -164,7 +164,7 @@ class LoginPageState extends State<LoginPage> {
       } else {
         setState(() {
           errorMsg =
-              "Youe Email-ID is not verified. A verification Emai has been sent to your Email-ID";
+              "You're Email-ID is not verified. A verification Email has been sent to your Email-ID";
           isProcessing = false;
         });
       }
