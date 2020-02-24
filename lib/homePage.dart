@@ -19,10 +19,11 @@ class HomePage extends StatefulWidget {
 
 AnimationController _controller;
 
-class HomePageState extends State<HomePage> with TickerProviderStateMixin{
+class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   int _selectedIndex = 0;
 
   static bool maps = false;
+  bool sosSending = false;
 
   static Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
   GeolocationStatus permissionStatus = GeolocationStatus.granted;
@@ -69,7 +70,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin{
   Widget sos;
   List<Widget> itemWidgets = new List<Widget>();
 
-
   @override
   void initState() {
     _controller = AnimationController(
@@ -83,7 +83,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin{
         alwaysPositionStream = await streamPositon("Users");
       }
     });
-
 
     itemWidgets = <Widget>[
       sosF(),
@@ -108,6 +107,13 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin{
     super.initState();
   }
 
+  Widget sosSent() {
+    return Container(
+        child: Center(
+      child: Text("SOS Sent"),
+    ));
+  }
+
   Widget sosF() {
     return Builder(
       builder: (BuildContext c) {
@@ -116,7 +122,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin{
             child: InkWell(
               child: Material(
                 child: Container(
-                  decoration: BoxDecoration( 
+                  decoration: BoxDecoration(
                     color: Colors.grey[850],
                     border: Border.all(
                       color: Colors.grey[850],
@@ -128,19 +134,28 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin{
                 ),
               ),
               onLongPress: () async {
-                alwaysPositionStream.cancel();
-                sosPositionStream = await streamPositon("SOS");
-                Timer(Duration(minutes: 5), () async {
-                  print("cancelled");
-                  sosPositionStream.cancel();
-                  alwaysPositionStream = await streamPositon("Users");
-                });
+                if (sosSending == false) {
+                  sosSending = true;
+                  alwaysPositionStream.cancel();
+                  sosPositionStream = await streamPositon("SOS");
+                  Timer(Duration(seconds: 10), () async {
+                    print("cancelled");
+                    sosSending = false;
+                    setState(() {
+                      itemWidgets[0] = sosF();
+                    });
+                    sosPositionStream.cancel();
+                    alwaysPositionStream = await streamPositon("Users");
+                  });
+                  setState(() {
+                    itemWidgets[0] = sosSent();
+                  });
+                }
               },
             ),
-            color:Colors.grey[850],
+            color: Colors.grey[850],
             width: MediaQuery.of(c).size.width * 0.8,
-            height: MediaQuery.of(c).size.width * 0.8, 
-            
+            height: MediaQuery.of(c).size.width * 0.8,
           ),
         );
       },
@@ -148,47 +163,201 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin{
   }
 
   Widget _buildBody() {
-      return AnimatedBuilder(
-        animation: CurvedAnimation(parent: _controller, curve: Curves.linear),
-        builder: (context, child) {
-          return Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              _buildContainer((1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
-              _buildContainer(2*(1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
-              _buildContainer(3*(1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
-              _buildContainer(4*(1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
-              _buildContainer(5*(1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
-              _buildContainer(6*(1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
-              _buildContainer(7*(1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
-              _buildContainer(8*(1367.879 - 8142.996*_controller.value + 17771.74*_controller.value*_controller.value - 16457.44*_controller.value*_controller.value*_controller.value + 5485.813*_controller.value*_controller.value*_controller.value*_controller.value - 4.439086e-8*_controller.value*_controller.value*_controller.value*_controller.value*_controller.value)),
-              _buildContainer(400),
-              Align(
-                child: Text(
-                    'SOS',
-                    style: TextStyle(
-                      fontSize: 30,
-                      color: Colors.white,
-                    ),
-                  ),
+    return AnimatedBuilder(
+      animation: CurvedAnimation(parent: _controller, curve: Curves.linear),
+      builder: (context, child) {
+        return Stack(
+          alignment: Alignment.center,
+          children: <Widget>[
+            _buildContainer((1367.879 -
+                8142.996 * _controller.value +
+                17771.74 * _controller.value * _controller.value -
+                16457.44 *
+                    _controller.value *
+                    _controller.value *
+                    _controller.value +
+                5485.813 *
+                    _controller.value *
+                    _controller.value *
+                    _controller.value *
+                    _controller.value -
+                4.439086e-8 *
+                    _controller.value *
+                    _controller.value *
+                    _controller.value *
+                    _controller.value *
+                    _controller.value)),
+            _buildContainer(2 *
+                (1367.879 -
+                    8142.996 * _controller.value +
+                    17771.74 * _controller.value * _controller.value -
+                    16457.44 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value +
+                    5485.813 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value -
+                    4.439086e-8 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value)),
+            _buildContainer(3 *
+                (1367.879 -
+                    8142.996 * _controller.value +
+                    17771.74 * _controller.value * _controller.value -
+                    16457.44 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value +
+                    5485.813 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value -
+                    4.439086e-8 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value)),
+            _buildContainer(4 *
+                (1367.879 -
+                    8142.996 * _controller.value +
+                    17771.74 * _controller.value * _controller.value -
+                    16457.44 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value +
+                    5485.813 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value -
+                    4.439086e-8 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value)),
+            _buildContainer(5 *
+                (1367.879 -
+                    8142.996 * _controller.value +
+                    17771.74 * _controller.value * _controller.value -
+                    16457.44 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value +
+                    5485.813 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value -
+                    4.439086e-8 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value)),
+            _buildContainer(6 *
+                (1367.879 -
+                    8142.996 * _controller.value +
+                    17771.74 * _controller.value * _controller.value -
+                    16457.44 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value +
+                    5485.813 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value -
+                    4.439086e-8 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value)),
+            _buildContainer(7 *
+                (1367.879 -
+                    8142.996 * _controller.value +
+                    17771.74 * _controller.value * _controller.value -
+                    16457.44 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value +
+                    5485.813 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value -
+                    4.439086e-8 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value)),
+            _buildContainer(8 *
+                (1367.879 -
+                    8142.996 * _controller.value +
+                    17771.74 * _controller.value * _controller.value -
+                    16457.44 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value +
+                    5485.813 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value -
+                    4.439086e-8 *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value *
+                        _controller.value)),
+            _buildContainer(400),
+            Align(
+              child: Text(
+                'SOS',
+                style: TextStyle(
+                  fontSize: 30,
+                  color: Colors.white,
+                ),
               ),
-            ],
-          );
-        },
-      );
-    }
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-    Widget _buildContainer(double radius) {
+  Widget _buildContainer(double radius) {
     return Container(
       width: radius,
       height: radius,
       decoration: BoxDecoration(
         border: Border.all(
-          color: Colors.purple[(-80*_controller.value*_controller.value+120*_controller.value-35).round()*100-100],
-          width:radius*0.01,
+          color: Colors.purple[(-80 * _controller.value * _controller.value +
+                          120 * _controller.value -
+                          35)
+                      .round() *
+                  100 -
+              100],
+          width: radius * 0.01,
         ),
         shape: BoxShape.circle,
-        color: Colors.purple[(-64*_controller.value*_controller.value+96*_controller.value-27).round()*100-300].withOpacity(1 - 0.5*_controller.value),
+        color: Colors.purple[(-64 * _controller.value * _controller.value +
+                            96 * _controller.value -
+                            27)
+                        .round() *
+                    100 -
+                300]
+            .withOpacity(1 - 0.5 * _controller.value),
       ),
     );
   }
@@ -196,7 +365,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin{
   Widget build(BuildContext context) {
     return permissionStatus == GeolocationStatus.granted
         ? Scaffold(
-          backgroundColor: Colors.grey[850],
+            backgroundColor: Colors.grey[850],
             body: itemWidgets[_selectedIndex],
             bottomNavigationBar: BottomNavigationBar(
               items: <BottomNavigationBarItem>[
@@ -242,7 +411,11 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin{
                       } else {
                         MapPageState.stream.cancel();
                         //alwaysPositionStream = await streamPositon("Users");
-                        itemWidgets[0] = sosF();
+                        if (sosSending == false) {
+                          itemWidgets[0] = sosF();
+                        } else {
+                          itemWidgets[0] = sosSent();
+                        }
                       }
                       setState(() {});
                     },
