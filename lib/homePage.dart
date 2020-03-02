@@ -9,6 +9,7 @@ import 'authentication.dart';
 import 'main.dart';
 import 'getUserData.dart';
 
+import 'package:video_player/video_player.dart';
 import 'mapPage.dart';
 import 'JsonClass.dart';
 import 'databaseClass.dart';
@@ -20,8 +21,12 @@ class HomePage extends StatefulWidget {
 AnimationController _controller;
 
 class HomePageState extends State<HomePage> with TickerProviderStateMixin {
+  Timer _timer;
+  double _start = 1;
+  VideoPlayerController _vidcontroller;
+ Future<void> _initializeVideoPlayerFuture;
   int _selectedIndex = 0;
-
+  bool run = true;
   static bool maps = false;
   bool sosSending = false;
 
@@ -72,10 +77,14 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   void initState() {
+   _vidcontroller = VideoPlayerController.asset("images/tick.mp4");
+   _initializeVideoPlayerFuture = _vidcontroller.initialize();
+   _vidcontroller.setLooping(false);
+   _vidcontroller.setVolume(0.0);
     _controller = AnimationController(
       vsync: this,
       lowerBound: 0.5,
-      duration: Duration(seconds: 3),
+      duration: Duration(seconds: 4),
     )..repeat();
     locationPermission().then((_) async {
       setState(() {});
@@ -107,12 +116,112 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.initState();
   }
 
-  Widget sosSent() {
+  Widget sosSent(BuildContext c){
     return Container(
-        child: Center(
-      child: Text("SOS Sent"),
-    ));
+      decoration: BoxDecoration(
+        color: Colors.purple,
+        border: Border.all(
+          color: Colors.purple,
+          width: 0,
+        ),
+      ),
+      child: Center(
+        child:Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children:<Widget>[
+            Text(
+              'Don’t worry, Help is on it’s way!',
+              style: TextStyle(
+                fontSize: 17,
+                color: Colors.white,
+              ),
+            ),
+            Container(
+              width: MediaQuery.of(c).size.width*0.7,
+            child: FutureBuilder(
+              future: _initializeVideoPlayerFuture,
+              builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    _vidcontroller.play();
+                  return Center(
+                      child: AspectRatio(
+                      aspectRatio: _vidcontroller.value.aspectRatio,
+                      child: VideoPlayer(_vidcontroller),
+                      ),
+                    );
+                  } else {
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                },
+              ),
+            ),
+            Text(
+              'Sent',
+              style: TextStyle(
+                fontSize: 30,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+        ),
+    );
   }
+
+Widget startTimer(BuildContext c) {
+  const oneSec = const Duration(milliseconds: 3);
+  _timer = new Timer.periodic(
+    oneSec,
+    (Timer timer) => setState(
+      () {
+        if (_start < 0.1) {
+          timer.cancel();
+          setState(() {
+                    _vidcontroller.seekTo(Duration(milliseconds: 500));
+                    _start=1;
+                    itemWidgets[0]=sosSent(c);
+                  });
+        } else {
+          _start = _start - 0.01;
+          itemWidgets[0]=transition(_start);
+        }
+      },
+    ),
+  );
+}
+
+Widget transition(double val){
+  return Builder(
+      builder: (BuildContext c) {
+        return Center(
+          child: Container(
+            child: InkWell(
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: new BorderRadius.all(Radius.circular(1000*_start)),
+                    color: Colors.purple,
+                    border: Border.all(
+                      color: Colors.purple,
+                      width: 0,
+                    ),
+                  ),
+                  alignment: Alignment(0, 0),
+                ),
+              ),
+            ),
+            color: Colors.grey[850],
+            width: MediaQuery.of(c).size.width*(1-_start),
+            height: MediaQuery.of(c).size.height*(1-_start),
+          ),
+        );
+      },
+    );
+}
 
   Widget sosF() {
     return Builder(
@@ -148,14 +257,15 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     alwaysPositionStream = await streamPositon("Users");
                   });
                   setState(() {
-                    itemWidgets[0] = sosSent();
+
+                    startTimer(c);
                   });
                 }
               },
             ),
             color: Colors.grey[850],
-            width: MediaQuery.of(c).size.width * 0.8,
-            height: MediaQuery.of(c).size.width * 0.8,
+            width: MediaQuery.of(c).size.width*1.5,
+            height: MediaQuery.of(c).size.width*1.5,
           ),
         );
       },
@@ -169,158 +279,13 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         return Stack(
           alignment: Alignment.center,
           children: <Widget>[
-            _buildContainer((1367.879 -
-                8142.996 * _controller.value +
-                17771.74 * _controller.value * _controller.value -
-                16457.44 *
-                    _controller.value *
-                    _controller.value *
-                    _controller.value +
-                5485.813 *
-                    _controller.value *
-                    _controller.value *
-                    _controller.value *
-                    _controller.value -
-                4.439086e-8 *
-                    _controller.value *
-                    _controller.value *
-                    _controller.value *
-                    _controller.value *
-                    _controller.value)),
-            _buildContainer(2 *
-                (1367.879 -
-                    8142.996 * _controller.value +
-                    17771.74 * _controller.value * _controller.value -
-                    16457.44 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value +
-                    5485.813 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value -
-                    4.439086e-8 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value)),
-            _buildContainer(3 *
-                (1367.879 -
-                    8142.996 * _controller.value +
-                    17771.74 * _controller.value * _controller.value -
-                    16457.44 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value +
-                    5485.813 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value -
-                    4.439086e-8 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value)),
-            _buildContainer(4 *
-                (1367.879 -
-                    8142.996 * _controller.value +
-                    17771.74 * _controller.value * _controller.value -
-                    16457.44 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value +
-                    5485.813 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value -
-                    4.439086e-8 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value)),
-            _buildContainer(5 *
-                (1367.879 -
-                    8142.996 * _controller.value +
-                    17771.74 * _controller.value * _controller.value -
-                    16457.44 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value +
-                    5485.813 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value -
-                    4.439086e-8 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value)),
-            _buildContainer(6 *
-                (1367.879 -
-                    8142.996 * _controller.value +
-                    17771.74 * _controller.value * _controller.value -
-                    16457.44 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value +
-                    5485.813 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value -
-                    4.439086e-8 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value)),
-            _buildContainer(7 *
-                (1367.879 -
-                    8142.996 * _controller.value +
-                    17771.74 * _controller.value * _controller.value -
-                    16457.44 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value +
-                    5485.813 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value -
-                    4.439086e-8 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value)),
-            _buildContainer(8 *
-                (1367.879 -
-                    8142.996 * _controller.value +
-                    17771.74 * _controller.value * _controller.value -
-                    16457.44 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value +
-                    5485.813 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value -
-                    4.439086e-8 *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value *
-                        _controller.value)),
-            _buildContainer(400),
+            _buildContainer(200),
+            _buildContainer(200+50*(2*_controller.value-1)),
+            _buildContainer(250+50*(2*_controller.value-1)),
+            _buildContainer(300+50*(2*_controller.value-1)),
+            _buildContainer(350+50*(2*_controller.value-1)),
+            _buildContainer(400+50*(2*_controller.value-1)),
+            _buildContainer(450+50*(2*_controller.value-1)),
             Align(
               child: Text(
                 'SOS',
@@ -342,22 +307,12 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
       height: radius,
       decoration: BoxDecoration(
         border: Border.all(
-          color: Colors.purple[(-80 * _controller.value * _controller.value +
-                          120 * _controller.value -
-                          35)
-                      .round() *
-                  100 -
-              100],
-          width: radius * 0.01,
+          //color: Colors.cyan[(radius/50).round()*100-200],
+          width: 0,
         ),
         shape: BoxShape.circle,
-        color: Colors.purple[(-64 * _controller.value * _controller.value +
-                            96 * _controller.value -
-                            27)
-                        .round() *
-                    100 -
-                300]
-            .withOpacity(1 - 0.5 * _controller.value),
+        color: Color(0xFF48AAAD)
+            .withOpacity((500 - radius)/500),
       ),
     );
   }
@@ -414,7 +369,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         if (sosSending == false) {
                           itemWidgets[0] = sosF();
                         } else {
-                          itemWidgets[0] = sosSent();
+                          itemWidgets[0] = sosSent(context);
                         }
                       }
                       setState(() {});
