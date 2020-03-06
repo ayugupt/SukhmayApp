@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:flutter/services.dart';
 import 'package:sukhmay/login.dart';
 
 import 'profilePage.dart';
@@ -12,6 +14,8 @@ import 'getUserData.dart';
 import 'mapPage.dart';
 import 'JsonClass.dart';
 import 'databaseClass.dart';
+import 'package:flutter/semantics.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class HomePage extends StatefulWidget {
   HomePageState createState() => HomePageState();
@@ -32,6 +36,18 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   static Auth auth = new Auth();
   static GetUserData getData = new GetUserData();
+
+  static Future<String> connectFlutterToBackend() async {
+    if (Platform.isAndroid) {
+      var channel = MethodChannel("com.example.sukhmay.messages");
+      String data = await channel.invokeMethod("startService");
+      print(data);
+      return data;
+    }
+    return null;
+  }
+
+  String victimData;
 
   Future<void> locationPermission() async {
     GeolocationStatus stat =
@@ -55,8 +71,8 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return geolocator
         .getPositionStream(locationOptions)
         .listen((Position position) {
-      MapPageState.lat = position.latitude;
-      MapPageState.long = position.longitude;
+      //MapPageState.lat = position.latitude;
+      //MapPageState.long = position.longitude;
       dataBase.pushDataWithoutKey(path + "/$uid/Latitude", position.latitude);
       dataBase.pushDataWithoutKey(path + "/$uid/Longitude", position.longitude);
     });
@@ -72,6 +88,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   void initState() {
+    
     _controller = AnimationController(
       vsync: this,
       lowerBound: 0.5,
@@ -80,9 +97,17 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     locationPermission().then((_) async {
       setState(() {});
       if (permissionStatus == GeolocationStatus.granted) {
-        alwaysPositionStream = await streamPositon("Users");
+        connectFlutterToBackend();
+        //alwaysPositionStream = await streamPositon("Users");
       }
     });
+
+    /*dataBase.sosAlert().then((stream) {
+      stream.listen((event) async {
+        victimData = await connectFlutterToBackend();
+        setState(() {});
+      });
+    });*/
 
     itemWidgets = <Widget>[
       sosF(),
@@ -105,6 +130,12 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     ];
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   Widget sosSent() {
@@ -134,18 +165,20 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               ),
               onLongPress: () async {
+                //connectFlutterToBackend();
                 if (sosSending == false) {
                   sosSending = true;
-                  alwaysPositionStream.cancel();
+                  //alwaysPositionStream.cancel();
                   sosPositionStream = await streamPositon("SOS");
-                  Timer(Duration(seconds: 10), () async {
+                  Timer(Duration(minutes: 1), () async {
                     print("cancelled");
                     sosSending = false;
                     setState(() {
                       itemWidgets[0] = sosF();
                     });
                     sosPositionStream.cancel();
-                    alwaysPositionStream = await streamPositon("Users");
+                    //alwaysPositionStream = await streamPositon("Users");
+                    await dataBase.removeFromSos();
                   });
                   setState(() {
                     itemWidgets[0] = sosSent();
@@ -409,7 +442,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         //alwaysPositionStream.cancel();
                         itemWidgets[0] = MapPage();
                       } else {
-                        MapPageState.stream.cancel();
+                        MapPageState.streamSub.cancel();
                         //alwaysPositionStream = await streamPositon("Users");
                         if (sosSending == false) {
                           itemWidgets[0] = sosF();
