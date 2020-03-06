@@ -42,10 +42,18 @@ class MapPageState extends State<MapPage> {
   @override
   void initState() {
     //victimMarkerSet.add(victimMarker);
-    victimMarker = new Marker(markerId: markerId);
-    victimMarkerMap[markerId] = victimMarker;
     lat = 100.0;
     long = 50.0;
+    victimMarker = new Marker(markerId: markerId);
+    victimMarkerMap[markerId] = victimMarker;
+    locator
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
+        .then((pos) {
+      setState(() {
+        lat = pos.latitude;
+        long = pos.longitude;
+      });
+    });
 
     dataBase.sosAlert().then((stream) {
       stream.listen((event) async {
@@ -69,8 +77,8 @@ class MapPageState extends State<MapPage> {
     });
 
     streamSub = locator
-        .getPositionStream(
-            LocationOptions(accuracy: LocationAccuracy.best, distanceFilter: 10))
+        .getPositionStream(LocationOptions(
+            accuracy: LocationAccuracy.best, distanceFilter: 10))
         .listen((Position position) {
       if (mapCreated) {
         print("Lat: ${position.latitude}, Long: ${position.longitude}");
