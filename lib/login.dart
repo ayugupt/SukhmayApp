@@ -42,7 +42,10 @@ class LoginPageState extends State<LoginPage> {
         body: Stack(children: <Widget>[
       ListView(children: <Widget>[
         Center(
-          child: Image.asset("images/innomages_logo.png"),
+          child:Container(
+            color: Colors.white,
+            child: Image.asset("images/safesis_logo.png"),
+          ),
         ),
         Form(
             key: formKey,

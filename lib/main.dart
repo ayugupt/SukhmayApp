@@ -12,7 +12,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Swaraksha',
+      debugShowCheckedModeBanner: false,
+      title: 'SafeSIS',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -74,6 +75,20 @@ class OpeningScreenState extends State<OpeningScreen> {
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.center,
             children:<Widget>[
+              Container(
+                decoration: BoxDecoration(
+                  shape:BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.8),
+                      spreadRadius: 10,
+                      blurRadius: 5,
+                      offset: Offset(0, 0), // changes position of shadow
+                    ),
+                  ],
+                ),
+                child: Image.asset("images/safesis_logo.png", width: MediaQuery.of(context).size.width*0.7),
+              ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,

@@ -119,9 +119,9 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget sosSent(BuildContext c){
     return Container(
       decoration: BoxDecoration(
-        color: Colors.purple,
+        color: Color(0x0350b3ab).withOpacity(1),
         border: Border.all(
-          color: Colors.purple,
+          color: Color(0x0350b3ab),
           width: 0,
         ),
       ),
@@ -156,13 +156,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     );
                   }
                 },
-              ),
-            ),
-            Text(
-              'Sent',
-              style: TextStyle(
-                fontSize: 30,
-                color: Colors.white,
               ),
             ),
           ],
@@ -204,9 +197,9 @@ Widget transition(double val){
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: new BorderRadius.all(Radius.circular(1000*_start)),
-                    color: Colors.purple,
+                    color: Color(0x0350b3ab),
                     border: Border.all(
-                      color: Colors.purple,
+                      color: Color(0x0350b3ab),
                       width: 0,
                     ),
                   ),
@@ -290,7 +283,8 @@ Widget transition(double val){
               child: Text(
                 'SOS',
                 style: TextStyle(
-                  fontSize: 30,
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
@@ -311,7 +305,7 @@ Widget transition(double val){
           width: 0,
         ),
         shape: BoxShape.circle,
-        color: Color(0xFF48AAAD)
+        color: Color(0x0350b3ab)
             .withOpacity((500 - radius)/500),
       ),
     );
@@ -325,11 +319,11 @@ Widget transition(double val){
             bottomNavigationBar: BottomNavigationBar(
               items: <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
-                    icon: Icon(Icons.home), title: Text("Home")),
+                    icon: Icon(Icons.home,color:_selectedIndex==0?Colors.blue:Colors.white), title: Text("Home",style:TextStyle(color:_selectedIndex==0?Colors.blue:Colors.white))),
                 BottomNavigationBarItem(
-                    icon: Icon(Icons.person), title: Text("Profile")),
+                    icon: Icon(Icons.person_pin,color:_selectedIndex==1?Colors.blue:Colors.white), title: Text("Profile",style:TextStyle(color:_selectedIndex==1?Colors.blue:Colors.white))),
                 BottomNavigationBarItem(
-                    icon: Icon(Icons.event), title: Text("Events")),
+                    icon: Icon(Icons.event,color:_selectedIndex==2?Colors.blue:Colors.white), title: Text("Events",style:TextStyle(color:_selectedIndex==2?Colors.blue:Colors.white))),
               ],
               currentIndex: _selectedIndex,
               onTap: (index) {
@@ -337,8 +331,8 @@ Widget transition(double val){
                   _selectedIndex = index;
                 });
               },
-              selectedItemColor: Colors.white,
-              backgroundColor: Colors.grey,
+              selectedItemColor: Colors.blue,
+              backgroundColor: Color(0x33333333),
             ),
             floatingActionButton: Row(
               children: <Widget>[
@@ -352,7 +346,7 @@ Widget transition(double val){
                       return LoginPage();
                     }), (Route<dynamic> route) => false);
                   },
-                  backgroundColor: Colors.grey,
+                  backgroundColor: Colors.blueAccent,
                   heroTag: 1,
                 ),
                 SizedBox(width: 20),
@@ -375,7 +369,7 @@ Widget transition(double val){
                       setState(() {});
                     },
                     heroTag: 2,
-                    backgroundColor: Colors.grey)
+                    backgroundColor: Colors.green)
               ],
               mainAxisAlignment: MainAxisAlignment.end,
             ))
