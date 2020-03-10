@@ -2,6 +2,7 @@ package com.example.sukhmay;
 
 import android.Manifest;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +20,7 @@ import android.os.IBinder;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -42,6 +44,12 @@ public class MyService extends Service{
     Ringtone r;
     static String victimUid = "";
 
+    NotificationCompat.Builder buildIt;
+    NotificationManagerCompat notificationManager;
+
+    int notificationId = 1321;
+
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -60,18 +68,33 @@ public class MyService extends Service{
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"messages")
                             .setContentText("This is running in background")
-                            .setContentTitle("Flutter Background");
+                            .setContentTitle("Flutter Background").setSmallIcon(R.drawable.launch_background);
 
 
              startForeground(101, builder.build());
         }
-        
+
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+
+         buildIt = new NotificationCompat.Builder(this, "help").setSmallIcon(R.drawable.launch_background)
+                .setContentText("Help Needed!")
+                .setContentTitle("Someone's in need of help").setPriority(NotificationCompat.PRIORITY_HIGH).setContentIntent(pendingIntent).setAutoCancel(true);
+
+        notificationManager = NotificationManagerCompat.from(this);
+
+
 
     }
 
     ChildEventListener childListener = new ChildEventListener() {
         @Override
         public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+
+            notificationManager.notify(notificationId, buildIt.build());
+            //startForeground(101, buildIt.build());
 
 
             victimUid = dataSnapshot.getValue().toString();
@@ -81,7 +104,7 @@ public class MyService extends Service{
             } else {
                 ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(150);
             }
-            r.play();
+
         }
 
         @Override
